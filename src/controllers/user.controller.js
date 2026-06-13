@@ -35,8 +35,11 @@ export const registerUser = asynchandeler(async(req,res)=>{
   }
 
  const avatarLocalPath = req.files?.avatar[0]?.path
- const coverImgLocalPath= req.files?.coverImage[0]?.path || "";   
-    console.log(req.files) 
+ let coverImgLocalPath; 
+ if(coverImgLocalPath){
+   coverImgLocalPath = req.files?.coverImage[0]?.path
+ } 
+//   console.log(req.files) 
    
 
  if(!avatarLocalPath){
@@ -44,8 +47,7 @@ export const registerUser = asynchandeler(async(req,res)=>{
  }
 
  const avatar = await uploadOnCloudinary(avatarLocalPath)
- const coverImage = await uploadOnCloudinary(coverImgLocalPath)
-
+ const coverImage = await uploadOnCloudinary(coverImgLocalPath) || ""
 
 
 if(!avatar){
