@@ -1,11 +1,16 @@
-import { connectDB } from "../01_basic/config/db.js";
 import express, { urlencoded } from 'express'
 import dotenv  from 'dotenv'
 import cors  from 'cors'
 import cookieParser from "cookie-parser";
+import userRouter  from './src/routes/user.routes.js'
+import connectDB from './src/config/db.js';
+import { initCloudinary } from './src/utils/cloudinary.js';
+
 dotenv.config({
     path:'./.env'
 })
+
+initCloudinary();
 
 const app= express()
 
@@ -22,6 +27,11 @@ app.use(urlencoded({
 }))
 app.use(express.static("public"))
 app.use(cookieParser())
+
+
+app.use("/api/v1/user",userRouter)
+
+
 connectDB()
 .then(()=>{
     app.listen(process.env.PORT || 8000,()=>{

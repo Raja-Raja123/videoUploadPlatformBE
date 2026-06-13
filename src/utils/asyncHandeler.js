@@ -11,9 +11,9 @@ const asyncHandeler = (fun)=>{
    }
 }
 
-const asynchandeler = (requestHandeler)=>{
-  (req,res,next) =>{
-      Promise.resolve(requestHandeler(req,res,next)).catch((err)=>next(err))
+export  const asynchandeler = (requestHandeler)=>{
+ return (req,res,next) =>{
+         Promise.resolve(requestHandeler(req,res,next)).catch((err)=>next(err))
   }
 }
 
