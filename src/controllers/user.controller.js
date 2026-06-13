@@ -31,16 +31,13 @@ export const registerUser = asynchandeler(async(req,res)=>{
   })
 
   if(existedUser){ 
-   console.log(" error :",existedUser)
    throw new ApiError(409,"user with email and username already exist")
   }
 
  const avatarLocalPath = req.files?.avatar[0]?.path
  const coverImgLocalPath= req.files?.coverImage[0]?.path || "";   
     console.log(req.files) 
-    console.log(`avatarLocalPath : ${avatarLocalPath}`)
-    console.log(`coverImgLocalPath : ${coverImgLocalPath}`)
-
+   
 
  if(!avatarLocalPath){
     throw new ApiError(400,"Avatar file is required")
@@ -49,8 +46,6 @@ export const registerUser = asynchandeler(async(req,res)=>{
  const avatar = await uploadOnCloudinary(avatarLocalPath)
  const coverImage = await uploadOnCloudinary(coverImgLocalPath)
 
- console.log("avatar:",avatar)
- console.log("coverImage:",coverImage)
 
 
 if(!avatar){
@@ -75,7 +70,7 @@ if(!createdUser){
    throw new ApiError(500,"something went wrong while registering a user")
 }
 
-return res.staus(200).json(
+return res.status(200).json(
 new ApiResponse(200,createdUser,"user created succesfully"))
 
 })
