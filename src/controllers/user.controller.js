@@ -225,5 +225,112 @@ const refreshAccesssToken = asynchandeler(async (req,res)=>{
      }
 })
 
+const changeCurrentPassword = asynchandeler(async(req,res)=>{
+   const {oldPassword,newPassword} = req.body
+
+   if(!(oldPassword||newPassword)){
+      throw new ApiError(401,"all fields are mandatory")
+   }
+
+   const user = await User.findById(req.user._id)
+   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+   if(!isPasswordCorrect){
+      throw new ApiError(400,"password is incorrect")
+   }
+
+   user.password = newPassword;
+   await user.save({validateBeforeSave:false})
+
+   return res.status(200)
+          .json(new ApiResponse(200,{},"password updated successfully"))
+})
+
+const updateAccountDetails = asynchandeler(async(req,res)=>{
+    const {fullName,email} = req.body
+
+    if(! (fullName || email)){
+       throw new ApiError(400,"all fields are mandetory")
+    }
+   const user = User.findByIdAndUpdate(req
+      .user?._id,
+      {
+         $set:{
+            fullName,email
+         }
+      },
+      {
+         new:true
+      }
+   ).select("-password")
+
+   return res.status(200)
+              .json(
+               new ApiResponse(200,user,"account details updated successfully")
+            )
+
+
+})
+
+const updateUserAvatar = asynchandeler((req,res)=>{
+   const avatarLclPath = req.file?.path
+
+   if(!avatar){
+      throw new ApiError(400,"Avatar file is missing")
+   }
+
+   // todo:delete old file
+   const avatar = await uploadOnCloudinary(avatarLclPath)
+
+   if(!avatar){
+      throw new ApiError(400,"Error while uploading avatar")
+   }
+
+      const  user = User.findByIdAndUpdate(
+         req.user._id,
+         {
+            $set:{
+               avatar: avatar.url 
+            }
+         },
+         {new:true}
+      ).select("-password")
+
+      return res.status(200)
+                .json(
+                  new ApiResponse(200,user,"avatar updated succefully")
+                )
+})
+
+const updateUserCoverImg = asynchandeler((req,res)=>{
+   const coverImgLclPath = req.file?.path
+
+   if(!avatar){
+      throw new ApiError(400,"cover image file is missing")
+   }
+
+   // todo:delete old file
+   const coverImage = await uploadOnCloudinary(coverImgLclPath)
+
+   if(!coverImage){
+      throw new ApiError(400,"Error while uploading coverImage")
+   }
+
+      const  user = User.findByIdAndUpdate(
+         req.user._id,
+         {
+            $set:{
+               avatar: coverImage.url 
+            }
+         },
+         {new:true}
+      ).select("-password")
+
+      return res.status(200)
+                .json(
+                  new ApiResponse(200,user,"coverImage updated succefully")
+                )
+})
+
 export {registerUser,login,logout,refreshAccesssToken};
  
