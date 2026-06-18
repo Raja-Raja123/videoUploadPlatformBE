@@ -4,6 +4,7 @@ import {asynchandeler} from '../utils/asyncHandeler.js'
 import ApiResponse from '../utils/ApiResponse.js'
 import  uploadOnCloudinary  from '../utils/cloudinary.js'
 import jwt from "jsonwebtoken"
+import mongoose from 'mongoose'
 
 const generateAccessTokenAndRefreshToken = async (userId)=>{
 
@@ -272,6 +273,16 @@ const updateAccountDetails = asynchandeler(async(req,res)=>{
 
 })
 
+
+const getCurrentUser =  asynchandeler(async(req,res)=>{
+   return res
+   .status(200)
+   .json(
+      new ApiResponse(200,req.user,"user fetched successfully")
+   )
+})
+
+
 const updateUserAvatar = asynchandeler((req,res)=>{
    const avatarLclPath = req.file?.path
 
@@ -332,5 +343,133 @@ const updateUserCoverImg = asynchandeler((req,res)=>{
                 )
 })
 
-export {registerUser,login,logout,refreshAccesssToken};
+const getUserChannelProfile = asynchandeler(async(req,res)=>{
+     const {username} = req.params
+
+     if(!username?.trim()){
+       throw new ApiError(400,"username is missing")
+     }
+
+    const channel = await User.aggregate([
+      {
+      $match:{
+          username: username?.toLowerCase()
+      }
+    },
+   
+    {
+      $lookup:{
+         from:"subscriptions",
+         localField:"_id",
+         foreignField:"channel",
+         as:"subscribers"
+      }
+    },
+
+    {
+      $lookup:{
+           from:"subscriptions",
+         localField:"_id",
+         foreignField:"subscriber",
+         as:"subscriberdTo"
+      }
+    },
+    {
+      $addFields:{
+         subscribersCount : {
+            $size:"$subscribers"
+         },
+         channelSubscribedToCnt:{
+             $size:"$subscriberdTo "
+         },
+         isSubscribed:{
+            $cond:{
+               if:{$in:[req.user?._id,"$subscribers.subscriber"]},
+               then: true,
+               else:false
+            }
+         }
+      }
+    },
+
+    {
+      $project:{
+         fullName:1,
+         userName:1,
+         subscribersCount:1,
+         channelSubscribedToCnt:1,
+         isSubscribed:1,
+         avatar:1,
+         coverImage:1,
+         email:1
+
+      }
+    }
+
+   ])
+
+   if(!channel?.length){
+       throw new ApiError(404,"channel doenot exist")
+   }
+   console.log(channel);
+
+   return res.status(200)
+          .json(
+            new ApiResponse(200,channel[0],"user channel fetched succesfully")
+          )
+})
+
+const getWatchHistory = asynchandeler(async (req,res)=>{
+
+   const user = await User.aggregate([
+      {
+         $match : {
+            _id : new mongoose.Types.ObjectId(req.user._id)
+         }
+      },
+      {
+         $lookup:{
+            from:"videos",
+            localField: "$watchHistory",
+            foreignField:"_id",
+            as:"watchHistory",
+            pipeline:[
+               {
+                  $lookup:{
+                      from:"users",
+                      localField: "$owner",
+                      foreignField:"_id",
+                      as:"owner",
+                      pipeline:[
+                        {
+                           $project:{
+                              fullName : 1,
+                              userName:1,
+                              avatar:1
+                           }
+                        },
+                        {
+                           $addFields:{
+                              owner:{
+                                 $first : "$owner"
+                              }
+                           }
+                        }
+                      ]
+                  }
+               }
+            ]
+         }
+      }
+   ])
+   
+   return res.status(200)
+             .json(
+               new ApiResponse(200,user[0].watchHistory,"watch hitory fetched succesfully")
+             )
+
+})
+//***imp */ while we selecting _id it gives us a string which is not a mongodb actual complete id  as we use mongoose  it adds the string to  objectid("") but the actual id in mongoDB includes objectid("") also.
+
+export {registerUser,login,logout,refreshAccesssToken,getUserChannelProfile,getWatchHistory};
  
