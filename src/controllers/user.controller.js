@@ -272,7 +272,7 @@ const updateAccountDetails = asynchandeler(async(req,res)=>{
 
 
 })
-
+   
 
 const getCurrentUser =  asynchandeler(async(req,res)=>{
    return res
@@ -471,5 +471,5 @@ const getWatchHistory = asynchandeler(async (req,res)=>{
 })
 //***imp */ while we selecting _id it gives us a string which is not a mongodb actual complete id  as we use mongoose  it adds the string to  objectid("") but the actual id in mongoDB includes objectid("") also.
 
-export {registerUser,login,logout,refreshAccesssToken,getUserChannelProfile,getWatchHistory};
+export {registerUser,login,logout,refreshAccesssToken,changeCurrentPassword,updateAccountDetails,getCurrentUser,updateUserAvatar,updateUserCoverImg,getUserChannelProfile,getWatchHistory};
  
