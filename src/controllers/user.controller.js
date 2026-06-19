@@ -2,7 +2,7 @@ import ApiError from '../utils/ApiError.js'
 import User from '../models/user.model.js'
 import {asynchandeler} from '../utils/asyncHandeler.js'
 import ApiResponse from '../utils/ApiResponse.js'
-import  uploadOnCloudinary  from '../utils/cloudinary.js'
+import  uploadOnCloudinary, { deleteFromCloudinary }  from '../utils/cloudinary.js'
 import jwt from "jsonwebtoken"
 import mongoose from 'mongoose'
 
@@ -253,7 +253,7 @@ const updateAccountDetails = asynchandeler(async(req,res)=>{
     if(! (fullName || email)){
        throw new ApiError(400,"all fields are mandetory")
     }
-   const user = User.findByIdAndUpdate(req
+   const user =await User.findByIdAndUpdate(req
       .user?._id,
       {
          $set:{
@@ -272,7 +272,7 @@ const updateAccountDetails = asynchandeler(async(req,res)=>{
 
 
 })
-   
+
 
 const getCurrentUser =  asynchandeler(async(req,res)=>{
    return res
@@ -283,21 +283,22 @@ const getCurrentUser =  asynchandeler(async(req,res)=>{
 })
 
 
-const updateUserAvatar = asynchandeler((req,res)=>{
+const updateUserAvatar = asynchandeler(async(req,res)=>{
    const avatarLclPath = req.file?.path
 
-   if(!avatar){
+   if(!avatarLclPath){
       throw new ApiError(400,"Avatar file is missing")
    }
 
-   // todo:delete old file
+   
+   const oldAvatar = await User.findById(req.user?._id) //for deleting old avatar from cloudinary
    const avatar = await uploadOnCloudinary(avatarLclPath)
 
    if(!avatar){
       throw new ApiError(400,"Error while uploading avatar")
    }
-
-      const  user = User.findByIdAndUpdate(
+     await deleteFromCloudinary(oldAvatar.avatar)
+      const  user = await User.findByIdAndUpdate(
          req.user._id,
          {
             $set:{
@@ -313,25 +314,26 @@ const updateUserAvatar = asynchandeler((req,res)=>{
                 )
 })
 
-const updateUserCoverImg = asynchandeler((req,res)=>{
+const updateUserCoverImg = asynchandeler(async(req,res)=>{
    const coverImgLclPath = req.file?.path
 
-   if(!avatar){
+   if(!coverImgLclPath){
       throw new ApiError(400,"cover image file is missing")
    }
 
-   // todo:delete old file
+   const oldCoverImage = await User.findById(req.user?._id) //for deleting old avatar from cloudinary
    const coverImage = await uploadOnCloudinary(coverImgLclPath)
 
    if(!coverImage){
       throw new ApiError(400,"Error while uploading coverImage")
    }
 
-      const  user = User.findByIdAndUpdate(
+     await deleteFromCloudinary(oldCoverImage.coverImage)
+      const  user =await User.findByIdAndUpdate(
          req.user._id,
          {
             $set:{
-               avatar: coverImage.url 
+               coverImage: coverImage.url 
             }
          },
          {new:true}
@@ -346,7 +348,7 @@ const updateUserCoverImg = asynchandeler((req,res)=>{
 const getUserChannelProfile = asynchandeler(async(req,res)=>{
      const {username} = req.params
 
-     if(!username?.trim()){
+     if(!username?.trim()){ 
        throw new ApiError(400,"username is missing")
      }
 
@@ -380,7 +382,7 @@ const getUserChannelProfile = asynchandeler(async(req,res)=>{
             $size:"$subscribers"
          },
          channelSubscribedToCnt:{
-             $size:"$subscriberdTo "
+             $size:"$subscriberdTo"
          },
          isSubscribed:{
             $cond:{
@@ -417,7 +419,7 @@ const getUserChannelProfile = asynchandeler(async(req,res)=>{
           .json(
             new ApiResponse(200,channel[0],"user channel fetched succesfully")
           )
-})
+}) 
 
 const getWatchHistory = asynchandeler(async (req,res)=>{
 
@@ -430,14 +432,14 @@ const getWatchHistory = asynchandeler(async (req,res)=>{
       {
          $lookup:{
             from:"videos",
-            localField: "$watchHistory",
+            localField: "watchHistory",
             foreignField:"_id",
             as:"watchHistory",
             pipeline:[
                {
                   $lookup:{
                       from:"users",
-                      localField: "$owner",
+                      localField: "owner",
                       foreignField:"_id",
                       as:"owner",
                       pipeline:[
