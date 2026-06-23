@@ -1,12 +1,12 @@
 import ApiError from "../utils/ApiError.js";
 import User from "../models/user.model.js";
-import { asynchandeler } from "../utils/asyncHandeler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import uploadOnCloudinary, {
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { asyncHandeler } from "../utils/asyncHandeler.js";
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
   try {
@@ -26,7 +26,7 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
   }
 };
 
-const registerUser = asynchandeler(async (req, res) => {
+const registerUser = asyncHandeler(async (req, res) => {
   // steps to register a user
 
   // get user details  from front end
@@ -96,7 +96,7 @@ const registerUser = asynchandeler(async (req, res) => {
     .json(new ApiResponse(200, createdUser, "user created succesfully"));
 });
 
-const login = asynchandeler(async (req, res) => {
+const login = asyncHandeler(async (req, res) => {
   // take data from req
   // username or email
   // find the user
@@ -151,7 +151,7 @@ const login = asynchandeler(async (req, res) => {
     );
 });
 
-const logout = asynchandeler(async (req, res) => {
+const logout = asyncHandeler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
@@ -176,7 +176,7 @@ const logout = asynchandeler(async (req, res) => {
     .json(new ApiResponse(200, {}, "user logged out!"));
 });
 
-const refreshAccesssToken = asynchandeler(async (req, res) => {
+const refreshAccesssToken = asyncHandeler(async (req, res) => {
   try {
     const incomingRefreshToken =
       req.cookies.refreshToken || req.body.refreshToken;
@@ -223,7 +223,7 @@ const refreshAccesssToken = asynchandeler(async (req, res) => {
   }
 });
 
-const changeCurrentPassword = asynchandeler(async (req, res) => {
+const changeCurrentPassword = asyncHandeler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
   if (!(oldPassword || newPassword)) {
@@ -245,7 +245,7 @@ const changeCurrentPassword = asynchandeler(async (req, res) => {
     .json(new ApiResponse(200, {}, "password updated successfully"));
 });
 
-const updateAccountDetails = asynchandeler(async (req, res) => {
+const updateAccountDetails = asyncHandeler(async (req, res) => {
   const { fullName, email } = req.body;
 
   if (!(fullName || email)) {
@@ -269,13 +269,13 @@ const updateAccountDetails = asynchandeler(async (req, res) => {
     .json(new ApiResponse(200, user, "account details updated successfully"));
 });
 
-const getCurrentUser = asynchandeler(async (req, res) => {
+const getCurrentUser = asyncHandeler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, req.user, "user fetched successfully"));
 });
 
-const updateUserAvatar = asynchandeler(async (req, res) => {
+const updateUserAvatar = asyncHandeler(async (req, res) => {
   const avatarLclPath = req.file?.path;
 
   if (!avatarLclPath) {
@@ -304,7 +304,7 @@ const updateUserAvatar = asynchandeler(async (req, res) => {
     .json(new ApiResponse(200, user, "avatar updated succefully"));
 });
 
-const updateUserCoverImg = asynchandeler(async (req, res) => {
+const updateUserCoverImg = asyncHandeler(async (req, res) => {
   const coverImgLclPath = req.file?.path;
 
   if (!coverImgLclPath) {
@@ -334,7 +334,7 @@ const updateUserCoverImg = asynchandeler(async (req, res) => {
     .json(new ApiResponse(200, user, "coverImage updated succefully"));
 });
 
-const getUserChannelProfile = asynchandeler(async (req, res) => {
+const getUserChannelProfile = asyncHandeler(async (req, res) => {
   const { username } = req.params;
 
   if (!username?.trim()) {
@@ -407,11 +407,11 @@ const getUserChannelProfile = asynchandeler(async (req, res) => {
     .json(new ApiResponse(200, channel[0], "user channel fetched succesfully"));
 });
 
-const getWatchHistory = asynchandeler(async (req, res) => {
+const getWatchHistory = asyncHandeler(async (req, res) => {
   const user = await User.aggregate([
     {
       $match: {
-        _id: new mongoose.Types.ObjectId(req.user._id),
+        _id: new mongoose.Types.ObjectId(req.user._id)
       },
     },
     {
