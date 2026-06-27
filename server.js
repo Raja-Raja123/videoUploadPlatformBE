@@ -30,9 +30,11 @@ app.use(cookieParser())
 
 
 import dashboardRouter from "./src/routes/dashboard.route.js"
+import videoRouter   from "./src/routes/video.route.js"
 
 app.use("/api/v1/user",userRouter)
 app.use("/api/v1/user",dashboardRouter)
+app.use("/api/v1/user",videoRouter)
 
 
 connectDB()
