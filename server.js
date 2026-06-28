@@ -31,10 +31,16 @@ app.use(cookieParser())
 
 import dashboardRouter from "./src/routes/dashboard.route.js"
 import videoRouter   from "./src/routes/video.route.js"
+import likeRoute  from './src/routes/like.route.js'
+import commentRoute  from './src/routes/comment.route.js'
+import subscriptionRoute  from './src/routes/subscription.route.js'
 
 app.use("/api/v1/user",userRouter)
 app.use("/api/v1/user",dashboardRouter)
 app.use("/api/v1/user",videoRouter)
+app.use("/api/v1/user",likeRoute)
+app.use("/api/v1/user",commentRoute)
+app.use("/api/v1/user",subscriptionRoute)
 
 
 connectDB()
